@@ -8,7 +8,7 @@ from kivy.clock import Clock
 from kivy.graphics.texture import Texture
 from kivy.logger import Logger
 
-import cv2
+# import cv2
 import tensorflow as tf
 from layers import L1Dist
 import os 
@@ -22,6 +22,14 @@ class CamApp(App):
         self.img1 = Image(size_hint = (1,.8))
         self.button = Button(text='Verify', size_hint=(1,.1))
         self.verification = Label(text='Verification Uninitiated', size_hint=(1,.1))
+
+        #add items to layout
+        layout = BoxLayout(orientation= 'vertical')
+        layout.add_widget(self.img1)
+        layout.add_widget(self.verification)
+        layout.add_widget(self.button)
+
+        return layout
 
 if __name__ == '__main__':
     CamApp().run() 
