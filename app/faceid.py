@@ -20,14 +20,17 @@ class CamApp(App):
     def build(self):
         #Main layout component
         self.web_cam = Image(size_hint = (1,.8))
-        self.button = Button(text='Verify', size_hint=(1,.1))
-        self.verification = Label(text='Verification Uninitiated', size_hint=(1,.1))
+        self.button = Button(text='Verify',on_press=self.verify ,size_hint=(1,.1))
+        self.verification_label = Label(text='Verification Uninitiated', size_hint=(1,.1))
 
         #add items to layout
         layout = BoxLayout(orientation= 'vertical')
         layout.add_widget(self.web_cam)
-        layout.add_widget(self.verification)
+        layout.add_widget(self.verification_label)
         layout.add_widget(self.button)
+
+        #Load tensorflow/keras model
+        self.model = tf.keras.models.load_model('siamesemodelV2.h5', custom_objects={'L1Dist':L1Dist})
 
         #setup video capture device
         self.capture = cv2.VideoCapture(0)
@@ -49,6 +52,62 @@ class CamApp(App):
         img_texture = Texture.create(size=(frame.shape[1], frame.shape[0]), colorfmt = 'bgr')
         img_texture.blit_buffer(buf, colorfmt='bgr', bufferfmt='ubyte')
         self.web_cam.texture = img_texture
+
+    def preprocess(self, file_path):
+        #read in image from file path
+        byte_img = tf.io.read_file(file_path)
+        #load in the image
+        img = tf.io.decode_jpeg(byte_img)
+        #preprocessing step - resizing the image to be 100x100x3
+        img = tf.image.resize(img, (100, 100))
+        #Scale image to be between 0 and 1
+        img = img / 255.0
+
+        return img
+    
+    #verification function to verify person
+    def verify(self, *args):
+
+        #specify threshold
+        detection_threshold = 0.5
+        verification_threshold = 0.8
+
+        #Capyure input image from our webcam
+        SAVE_PATH = os.path.join('application_data', 'input_image', 'input_image.jpg')
+        ret, frame = self.capture.read()
+        frame = frame[120:120+250,200:200+250,:] 
+        cv2.imwrite(SAVE_PATH, frame)
+
+        #Build result array
+        results = []
+        for image in os.listdir(os.path.join('application_data', 'verification_images')):
+            input_img = self.preprocess(os.path.join('application_data', 'input_image', 'input_image.jpg'))
+            validation_img = self.preprocess(os.path.join('application_data', 'verification_images', image))
+            
+            #Make predictions
+            result = self.model.predict(list(np.expand_dims([input_img, validation_img], axis=1)))
+            results.append(result)
+
+        #Detection Threshold: Metric above which a prediction is considered positive
+        detection = np.sum(np.array(results) > detection_threshold)
+        #Verification threshold: Proportion of positive prediction / total positive samples
+        verification = detection / len(os.listdir(os.path.join('application_data', 'verification_images')))
+        verified = verification > verification_threshold
+
+        #Set verification text
+        self.verification_label.text = 'Verified' if verified == True else 'Unverified'
+
+        #Log out details
+        Logger.info(results)
+        Logger.info(detection)
+        Logger.info(verification)
+        Logger.info(verified)
+        Logger.info(np.sum(np.array(results) > 0.2))
+        Logger.info(np.sum(np.array(results) > 0.4))
+        Logger.info(np.sum(np.array(results) > 0.5))
+        Logger.info(np.sum(np.array(results) > 0.8))
+
+        return results, verified
 
 if __name__ == '__main__':
     CamApp().run() 
