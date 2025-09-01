@@ -1,0 +1,34 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# Kivy build
+*.pyo
+
+# Virtual env
+venv/
+.env/
+
+# Model files (if you don't want to track large model files)
+*.h5
+*.keras
+
+# Application data
+application_data/
+app/application_data/
+
+# Dataset and downloads
+data/
+lfw.zip
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
