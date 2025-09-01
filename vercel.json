@@ -1,0 +1,9 @@
+{
+  "version": 2,
+  "builds": [
+    { "src": "api/verify.py", "use": "@vercel/python" }
+  ],
+  "routes": [
+    { "src": "/api/verify", "dest": "api/verify.py" }
+  ]
+}

@@ -1,0 +1,4 @@
+kivy
+tensorflow
+opencv-python
+numpy

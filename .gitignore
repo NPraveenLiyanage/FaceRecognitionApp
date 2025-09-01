@@ -18,6 +18,23 @@ venv/
 application_data/
 app/application_data/
 
+# macOS resource fork files (do not commit)
+._*
+/.AppleDouble
+
+# Checkpoint / model training artifacts
+training_chechpoints/
+training_checkpoints/
+checkpoints/
+checkpoint
+*.ckpt
+*.ckpt.*
+*.index
+*.meta
+*.data-*
+*.tfrecord
+events.out.*
+
 # Dataset and downloads
 data/
 lfw.zip
